@@ -10,7 +10,6 @@ util         = require 'gulp-util'
 order        = require 'gulp-order'
 runSequence  = require 'run-sequence'
 rimraf       = require 'gulp-rimraf'
-wrapCommonjs = require 'gulp-wrap-commonjs'
 
 # Pre-processors Tools
 coffee      = require 'gulp-coffee'
