@@ -29,13 +29,21 @@ minifyHtml  = require 'gulp-minify-html'
 
 # Directories
 
-dirs = 
-  index:    "src/index.jade"
-  fonts:    "src/fonts/**/*"
-  images:   "src/images/**/*"
-  styles:   "src/styles/**/*.styl"
-  scripts:  "src/scripts/**/*.coffee"
-  partials: "src/partials/**/*.jade"
+dirs =
+  src: 
+    index:    "src/index.jade"
+    fonts:    "src/fonts/**/*"
+    images:   "src/images/**/*"
+    styles:   "src/styles/**/*.styl"
+    scripts:  "src/scripts/**/*.coffee"
+    partials: "src/partials/**/*.jade"
+
+  app:
+    fonts:    "app/fonts"
+    images:   "app/images"
+    styles:   "app/styles"
+    scripts:  "app/scripts"
+    partials: "app/partials"
 
 # --------------------------------------------------------------
 
@@ -47,23 +55,44 @@ gulp.task "browser-sync", ->
       baseDir: "app"
 
 gulp.task "scripts", ->
-  gulp.src dirs.scripts
+  gulp.src dirs.src.scripts
     .pipe do sourceMaps.init
     .pipe do ngClassify
     .pipe coffee bare: yes
     .pipe do sourceMaps.write
-    .pipe gulp.dest "app/scripts"
+    .pipe gulp.dest dirs.app.scripts
     .pipe browserSync.reload(
       stream: true
       once: true
     )
 
 gulp.task "styles", ->
-  gulp.src dirs.styles
+  gulp.src dirs.src.styles
     .pipe do stylus
-    .pipe gulp.dest "app/styles"
+    .pipe gulp.dest dirs.app.styles
     .pipe browserSync.reload(
       stream: true
     )
+
+gulp.task "partials", ->
+  gulp.src dirs.src.partials
+    .pipe jade pretty: yes
+    .pipe gulp.dest dirs.app.partials
+    .pipe browserSync.reload(
+      stream: true
+      once: true
+    )
+
+gulp.task "images", ->
+  gulp.src dirs.src.images
+    .pipe gulp.dest dirs.app.images
+    .pipe browserSync.reload(
+      stream: true
+      once: true
+    )
+
+gulp.task "fonts", ->
+  gulp.src dirs.src.fonts
+    .pipe gulp.dest dirs.app.fonts
 
 # gulp.task "watch", ["browser-sync"], ->
