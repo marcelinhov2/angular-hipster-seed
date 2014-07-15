@@ -94,7 +94,11 @@ gulp.task "styles", ->
       stream: true
     )
     
-gulp.task "partials", ->
+gulp.task "delete_partials", ->
+  gulp.src dirs.app.partials
+    .pipe rimraf force: true
+
+gulp.task "generate_partials", ->
   gulp.src dirs.src.partials
     .pipe jade pretty: yes
     .pipe gulp.dest dirs.app.partials
@@ -102,18 +106,38 @@ gulp.task "partials", ->
       stream: true
       once: true
     )
+
+gulp.task "partials", ->
+  runSequence ["delete_partials"], ->
+    gulp.start "generate_partials"
     
-gulp.task "images", ->
+gulp.task "delete_images", ->
+  gulp.src dirs.app.images
+    .pipe rimraf force: true
+
+gulp.task "generate_images", ->
   gulp.src dirs.src.images
     .pipe gulp.dest dirs.app.images
     .pipe browserSync.reload(
       stream: true
       once: true
     )
+
+gulp.task "images", ->
+  runSequence ["delete_images"], ->
+    gulp.start "generate_images"
     
-gulp.task "fonts", ->
+gulp.task "delete_fonts", ->
+  gulp.src dirs.app.fonts
+    .pipe rimraf force: true
+
+gulp.task "generate_fonts", ->
   gulp.src dirs.src.fonts
     .pipe gulp.dest dirs.app.fonts
+
+gulp.task "fonts", ->
+  runSequence ["delete_fonts"], ->
+    gulp.start "generate_fonts"
 
 gulp.task "concat_bower", ->
   gulp.src bowerFiles()
