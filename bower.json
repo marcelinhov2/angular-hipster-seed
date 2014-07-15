@@ -19,6 +19,7 @@
     "angular-loader": "~1.2.18",
     "angular-resource": "~1.2.18",
     "angular-animate": "~1.2.18",
-    "angular-cookies": "~1.2.18"
+    "angular-cookies": "~1.2.18",
+    "commonjs-require": "~1.4.5"
   }
 }
