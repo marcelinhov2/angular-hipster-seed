@@ -76,6 +76,9 @@ gulp.task "styles", ->
   gulp.src dirs.src.styles
     .pipe do stylus
     .pipe gulp.dest dirs.app.styles
+    .pipe browserSync.reload(
+      stream: true
+    )
     
 gulp.task "partials", ->
   gulp.src dirs.src.partials
