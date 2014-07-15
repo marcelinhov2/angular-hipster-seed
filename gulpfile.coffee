@@ -1,13 +1,14 @@
 # Gulp Tools
-gulp        = require 'gulp' 
-es          = require 'event-stream' 
-browserSync = require 'browser-sync' 
-bowerFiles  = require 'gulp-bower-files'
-clean       = require 'gulp-clean' 
-concat      = require 'gulp-concat' 
-imagemIn    = require 'gulp-imagemin' 
-inject      = require 'gulp-inject' 
-util        = require 'gulp-util' 
+gulp        = require 'gulp'
+es          = require 'event-stream'
+browserSync = require 'browser-sync'
+bowerFiles  = require 'main-bower-files'
+clean       = require 'gulp-clean'
+concat      = require 'gulp-concat'
+imagemIn    = require 'gulp-imagemin'
+inject      = require 'gulp-inject'
+util        = require 'gulp-util'
+order       = require 'gulp-order'
 
 # Pre-processors Tools
 coffee      = require 'gulp-coffee'
@@ -39,6 +40,8 @@ dirs =
     partials: "src/partials/**/*.jade"
 
   app:
+    js:       "app/scripts/**/*.js"
+    css:      "app/styles/**/*.css"
     fonts:    "app/fonts"
     images:   "app/images"
     styles:   "app/styles"
@@ -94,5 +97,24 @@ gulp.task "images", ->
 gulp.task "fonts", ->
   gulp.src dirs.src.fonts
     .pipe gulp.dest dirs.app.fonts
+
+gulp.task "concatBower", ->
+  gulp.src bowerFiles()
+    .pipe(concat( 'dependencies.js') )
+    .pipe gulp.dest dirs.app.scripts
+
+gulp.task "index", ["scripts", "styles", "concatBower"], ->
+  gulp.src dirs.src.index
+    .pipe jade pretty: yes
+    .pipe inject(es.merge(
+      gulp.src dirs.app.css, read: no
+    ,
+      gulp.src dirs.app.js, read: no
+    ), ignorePath: '/app')
+    .pipe gulp.dest 'app/'
+    .pipe browserSync.reload(
+      stream: true
+      once: true
+    )
 
 # gulp.task "watch", ["browser-sync"], ->
