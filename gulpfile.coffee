@@ -63,7 +63,7 @@ dirs =
 
 # Development Tasks
 
-gulp.task "browser-sync", ->
+gulp.task "browser_sync", ->
   browserSync.init null,
     server:
       baseDir: "app"
@@ -115,7 +115,7 @@ gulp.task "fonts", ->
   gulp.src dirs.src.fonts
     .pipe gulp.dest dirs.app.fonts
 
-gulp.task "concatBower", ->
+gulp.task "concat_bower", ->
   gulp.src bowerFiles()
     .pipe(concat( 'dependencies.js') )
     .pipe gulp.dest dirs.app.scripts
@@ -142,14 +142,14 @@ gulp.task "index", ->
     )
 
 gulp.task "compile", ->
-  runSequence ["concatBower", "scripts", "styles"], ->
+  runSequence ["concat_bower", "scripts", "styles"], ->
     gulp.start "index"
 
 gulp.task 'clean', ->
   runSequence ["delete_styles"], ->
     gulp.start "delete_scripts"
 
-gulp.task "watch", ["clean" ,"compile", "browser-sync"], ->
+gulp.task "watch", ["clean" ,"compile", "browser_sync"], ->
   gulp.watch dirs.src.index, ->
     gulp.start 'compile'
 
