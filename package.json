@@ -22,6 +22,8 @@
     "gulp-inject": "~0.4.1",
     "gulp-util": "~2.2.19",
     "gulp-order" : "~1.1.1",
+    "gulp-tap" : "~0.1.1",
+    "gulp-rimraf" : "~0.1.0",
 
     "gulp-coffee": "~2.0.1",
     "gulp-sourcemaps": "~0.4.1",

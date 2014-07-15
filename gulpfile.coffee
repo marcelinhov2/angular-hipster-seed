@@ -1,5 +1,6 @@
 # Gulp Tools
 gulp        = require 'gulp'
+tap         = require 'gulp-tap'
 es          = require 'event-stream'
 browserSync = require 'browser-sync'
 bowerFiles  = require 'main-bower-files'
@@ -10,6 +11,7 @@ inject      = require 'gulp-inject'
 util        = require 'gulp-util'
 order       = require 'gulp-order'
 runSequence = require 'run-sequence'
+rimraf      = require 'gulp-rimraf'
 
 # Pre-processors Tools
 coffee      = require 'gulp-coffee'
@@ -66,12 +68,24 @@ gulp.task "browser-sync", ->
     server:
       baseDir: "app"
 
-gulp.task "scripts", ->
+gulp.task "delete_scripts", ->
+  gulp.src dirs.app.scripts
+    .pipe rimraf force: true
+
+gulp.task "generate_scripts", ->
   gulp.src dirs.src.scripts
     .pipe do ngClassify
     .pipe coffee bare: yes
     .pipe gulp.dest dirs.app.scripts
-    
+
+gulp.task "scripts", ->
+  runSequence ["delete_scripts"], ->
+    gulp.start "generate_scripts"
+
+gulp.task "delete_styles", ->
+  gulp.src dirs.app.styles
+    .pipe rimraf force: true
+
 gulp.task "styles", ->
   gulp.src dirs.src.styles
     .pipe do stylus
@@ -131,7 +145,11 @@ gulp.task "compile", ->
   runSequence ["concatBower", "scripts", "styles"], ->
     gulp.start "index"
 
-gulp.task "watch", ["compile", "browser-sync"], ->
+gulp.task 'clean', ->
+  runSequence ["delete_styles"], ->
+    gulp.start "delete_scripts"
+
+gulp.task "watch", ["clean" ,"compile", "browser-sync"], ->
   gulp.watch dirs.src.index, ->
     gulp.start 'compile'
 
