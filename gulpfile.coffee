@@ -42,14 +42,14 @@ dirs =
 
   app:
     js:
+      main:         "app/scripts/main.js"
       dependencies: "app/scripts/dependencies.js"
       controllers:  "app/scripts/controllers/*.js"
       directives:   "app/scripts/directives/*.js"
       filters:      "app/scripts/filters/*.js"
       routes:       "app/scripts/routes/*.js"
       services:     "app/scripts/services/*.js"
-      main:         "app/scripts/main.js"
-
+      
     css:            "app/styles/**/*.css"
     fonts:          "app/fonts"
     images:         "app/images"
@@ -81,10 +81,18 @@ gulp.task "partials", ->
   gulp.src dirs.src.partials
     .pipe jade pretty: yes
     .pipe gulp.dest dirs.app.partials
+    .pipe browserSync.reload(
+      stream: true
+      once: true
+    )
     
 gulp.task "images", ->
   gulp.src dirs.src.images
     .pipe gulp.dest dirs.app.images
+    .pipe browserSync.reload(
+      stream: true
+      once: true
+    )
     
 gulp.task "fonts", ->
   gulp.src dirs.src.fonts
@@ -102,13 +110,14 @@ gulp.task "index", ->
       gulp.src([
         dirs.app.css, 
         dirs.app.js.dependencies, 
+        dirs.app.js.main,
         dirs.app.js.controllers,
+        dirs.app.js.directives,
         dirs.app.js.filters,
         dirs.app.js.services,
-        dirs.app.js.routes,
-        dirs.app.js.main
+        dirs.app.js.routes
       ], read: no )
-    )
+    , ignorePath: ['/app'])
     .pipe gulp.dest 'app/'
     .pipe browserSync.reload(
       stream: true
@@ -119,4 +128,18 @@ gulp.task "compile", ->
   runSequence ["concatBower", "scripts", "styles"], ->
     gulp.start "index"
 
-# gulp.task "watch", ["browser-sync"], ->
+gulp.task "watch", ["compile", "browser-sync"], ->
+  gulp.watch dirs.src.index, ->
+    gulp.start 'compile'
+
+  gulp.watch dirs.src.scripts, ->
+    gulp.start 'compile'
+
+  gulp.watch dirs.src.styles, ->
+    gulp.start 'styles'
+
+  gulp.watch dirs.src.partials, ->
+    gulp.start 'partials'
+
+  gulp.watch dirs.src.images, ->
+    gulp.start 'images'
