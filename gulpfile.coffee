@@ -9,6 +9,7 @@ imagemIn    = require 'gulp-imagemin'
 inject      = require 'gulp-inject'
 util        = require 'gulp-util'
 order       = require 'gulp-order'
+runSequence = require 'run-sequence'
 
 # Pre-processors Tools
 coffee      = require 'gulp-coffee'
@@ -40,13 +41,21 @@ dirs =
     partials: "src/partials/**/*.jade"
 
   app:
-    js:       "app/scripts/**/*.js"
-    css:      "app/styles/**/*.css"
-    fonts:    "app/fonts"
-    images:   "app/images"
-    styles:   "app/styles"
-    scripts:  "app/scripts"
-    partials: "app/partials"
+    js:
+      dependencies: "app/scripts/dependencies.js"
+      controllers:  "app/scripts/controllers/*.js"
+      directives:   "app/scripts/directives/*.js"
+      filters:      "app/scripts/filters/*.js"
+      routes:       "app/scripts/routes/*.js"
+      services:     "app/scripts/services/*.js"
+      main:         "app/scripts/main.js"
+
+    css:            "app/styles/**/*.css"
+    fonts:          "app/fonts"
+    images:         "app/images"
+    styles:         "app/styles"
+    scripts:        "app/scripts"
+    partials:       "app/partials"
 
 # --------------------------------------------------------------
 
@@ -59,41 +68,24 @@ gulp.task "browser-sync", ->
 
 gulp.task "scripts", ->
   gulp.src dirs.src.scripts
-    .pipe do sourceMaps.init
     .pipe do ngClassify
     .pipe coffee bare: yes
-    .pipe do sourceMaps.write
     .pipe gulp.dest dirs.app.scripts
-    .pipe browserSync.reload(
-      stream: true
-      once: true
-    )
-
+    
 gulp.task "styles", ->
   gulp.src dirs.src.styles
     .pipe do stylus
     .pipe gulp.dest dirs.app.styles
-    .pipe browserSync.reload(
-      stream: true
-    )
-
+    
 gulp.task "partials", ->
   gulp.src dirs.src.partials
     .pipe jade pretty: yes
     .pipe gulp.dest dirs.app.partials
-    .pipe browserSync.reload(
-      stream: true
-      once: true
-    )
-
+    
 gulp.task "images", ->
   gulp.src dirs.src.images
     .pipe gulp.dest dirs.app.images
-    .pipe browserSync.reload(
-      stream: true
-      once: true
-    )
-
+    
 gulp.task "fonts", ->
   gulp.src dirs.src.fonts
     .pipe gulp.dest dirs.app.fonts
@@ -103,18 +95,28 @@ gulp.task "concatBower", ->
     .pipe(concat( 'dependencies.js') )
     .pipe gulp.dest dirs.app.scripts
 
-gulp.task "index", ["scripts", "styles", "concatBower"], ->
+gulp.task "index", ->
   gulp.src dirs.src.index
     .pipe jade pretty: yes
-    .pipe inject(es.merge(
-      gulp.src dirs.app.css, read: no
-    ,
-      gulp.src dirs.app.js, read: no
-    ), ignorePath: '/app')
+    .pipe inject(
+      gulp.src([
+        dirs.app.css, 
+        dirs.app.js.dependencies, 
+        dirs.app.js.controllers,
+        dirs.app.js.filters,
+        dirs.app.js.services,
+        dirs.app.js.routes,
+        dirs.app.js.main
+      ], read: no )
+    )
     .pipe gulp.dest 'app/'
     .pipe browserSync.reload(
       stream: true
       once: true
     )
+
+gulp.task "compile", ->
+  runSequence ["concatBower", "scripts", "styles"], ->
+    gulp.start "index"
 
 # gulp.task "watch", ["browser-sync"], ->
