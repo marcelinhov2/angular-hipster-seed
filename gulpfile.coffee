@@ -6,6 +6,7 @@ bowerFiles   = require 'main-bower-files'
 concat       = require 'gulp-concat'
 imagemIn     = require 'gulp-imagemin'
 inject       = require 'gulp-inject'
+ignore       = require 'gulp-ignore'
 util         = require 'gulp-util'
 order        = require 'gulp-order'
 using        = require 'gulp-using'
@@ -52,6 +53,7 @@ dirs =
       services:     "app/scripts/services/*.js"
       
     css:            "app/styles/**/*.css"
+    index:          "app/index.html"
     fonts:          "app/fonts"
     images:         "app/images"
     styles:         "app/styles"
@@ -75,21 +77,12 @@ gulp.task "browser_sync", ->
 
 # Scripts Tasks
 
-gulp.task "delete_scripts", (cb) ->
-  gulp.src dirs.app.scripts
-    .pipe rimraf force: true
-
-  cb null
-
-gulp.task "generate_scripts", ["delete_scripts"], (cb) ->
+gulp.task "scripts", (cb) ->
   gulp.src dirs.src.scripts
     .pipe do ngClassify
     .pipe coffee bare: yes
     .pipe gulp.dest dirs.app.scripts
 
-  cb null
-
-gulp.task "scripts", ["generate_scripts"], (cb) ->
   cb null
 
 # END of Scripts Tasks
@@ -98,20 +91,11 @@ gulp.task "scripts", ["generate_scripts"], (cb) ->
 
 # Styles Tasks
 
-gulp.task "delete_styles", (cb) ->
-  gulp.src dirs.app.styles
-    .pipe rimraf force: true
-
-  cb null
-
-gulp.task "generate_styles", ["delete_styles"], (cb) ->
+gulp.task "styles", (cb) ->
   gulp.src dirs.src.styles
     .pipe do stylus
     .pipe gulp.dest dirs.app.styles
 
-  cb null
-
-gulp.task "styles", ["generate_styles"], (cb) ->
   cb null
 
 # END of Styles tasks
@@ -119,21 +103,12 @@ gulp.task "styles", ["generate_styles"], (cb) ->
 # ------------------------------------------------------------------------------
 
 # Partials Tasks
-    
-gulp.task "delete_partials", (cb) ->
-  gulp.src dirs.app.partials
-    .pipe rimraf force: true
 
-  cb null
-
-gulp.task "generate_partials", ["delete_partials"], (cb) ->
+gulp.task "partials", (cb) ->
   gulp.src dirs.src.partials
     .pipe jade pretty: yes
     .pipe gulp.dest dirs.app.partials
 
-  cb null
-
-gulp.task "partials", ["generate_partials"], (cb) ->
   cb null
     
 # END of Partials tasks
@@ -141,20 +116,11 @@ gulp.task "partials", ["generate_partials"], (cb) ->
 # ------------------------------------------------------------------------------
 
 # Images tasks
-    
-gulp.task "delete_images", (cb) ->
-  gulp.src dirs.app.images
-    .pipe rimraf force: true
 
-  cb null
-
-gulp.task "generate_images", ["delete_images"], (cb) ->
+gulp.task "images", (cb) ->
   gulp.src dirs.src.images
     .pipe gulp.dest dirs.app.images
 
-  cb null
-
-gulp.task "images", ["generate_images"], (cb) ->
   cb null
 
 # END of Images tasks
@@ -162,20 +128,11 @@ gulp.task "images", ["generate_images"], (cb) ->
 # ------------------------------------------------------------------------------
 
 # Fonts tasks
-    
-gulp.task "delete_fonts", (cb) ->
-  gulp.src dirs.app.fonts
-    .pipe rimraf force: true
 
-  cb null
-
-gulp.task "generate_fonts", ["delete_fonts"], (cb) ->
+gulp.task "fonts", (cb) ->
   gulp.src dirs.src.fonts
     .pipe gulp.dest dirs.app.fonts
 
-  cb null
-
-gulp.task "fonts", ["generate_fonts"], (cb) ->
   cb null
 
 # END of Fonts tasks
@@ -208,7 +165,7 @@ gulp.task "concat_bower", (cb) ->
   cb null
 
 gulp.task "compile", (cb) ->
-  runSequence "clean", "concat_bower", ["scripts", "styles", "partials", "images", "fonts"], "index", ->
+  runSequence "scripts", "concat_bower", ["styles", "partials", "images", "fonts"], "index", ->
     cb null
 
 # END of Compile tasks
@@ -217,9 +174,11 @@ gulp.task "compile", (cb) ->
 
 # Clean Task
 
-gulp.task 'clean', ->
+gulp.task 'clean', (cb) ->
   gulp.src ['app/**/*', '!app/bower_components', '!app/bower_components/**'], read: no
     .pipe rimraf force: true
+
+  cb null
 
 # END of clean task
 
