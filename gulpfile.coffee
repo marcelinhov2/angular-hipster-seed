@@ -208,8 +208,8 @@ gulp.task "concat_bower", (cb) ->
   cb null
 
 gulp.task "compile", (cb) ->
-  runSequence "clean", "concat_bower", ["scripts", "styles", "partials", "images", "fonts"], "index"
-    # cb null
+  runSequence "clean", "concat_bower", ["scripts", "styles", "partials", "images", "fonts"], "index", ->
+    cb null
 
 # END of Compile tasks
 
