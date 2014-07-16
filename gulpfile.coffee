@@ -164,12 +164,12 @@ gulp.task "index", ->
     )
 
 gulp.task "compile", ->
-  runSequence ["concat_bower", "scripts", "styles"], ->
+  runSequence ["concat_bower", "scripts", "styles", "partials", "images", "fonts"], ->
     gulp.start "index"
 
 gulp.task 'clean', ->
-  runSequence ["delete_styles"], ->
-    gulp.start "delete_scripts"
+  gulp.src ['app/**/*', '!app/bower_components', '!app/bower_components/**'], read: no
+    .pipe rimraf force: true
 
 gulp.task "watch", ["clean" ,"compile", "browser_sync"], ->
   gulp.watch dirs.src.index, ->
