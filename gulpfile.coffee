@@ -8,8 +8,9 @@ imagemIn     = require 'gulp-imagemin'
 inject       = require 'gulp-inject'
 util         = require 'gulp-util'
 order        = require 'gulp-order'
-runSequence  = require 'run-sequence'
+using        = require 'gulp-using'
 rimraf       = require 'gulp-rimraf'
+runSequence  = require 'run-sequence'
 
 # Pre-processors Tools
 coffee      = require 'gulp-coffee'
@@ -27,7 +28,7 @@ uglify      = require 'gulp-uglify'
 minifyCss   = require 'gulp-minify-css'
 minifyHtml  = require 'gulp-minify-html'
 
-# --------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # Directories
 
@@ -57,92 +58,111 @@ dirs =
     scripts:        "app/scripts"
     partials:       "app/partials"
 
-# --------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # Development Tasks
+
+# Server Tasks
 
 gulp.task "browser_sync", ->
   browserSync.init null,
     server:
       baseDir: "app"
 
+# END of Server Tasks
+
+# ------------------------------------------------------------------------------
+
+# Scripts Tasks
+
 gulp.task "delete_scripts", ->
   gulp.src dirs.app.scripts
     .pipe rimraf force: true
 
-gulp.task "generate_scripts", ->
+gulp.task "generate_scripts", ["delete_scripts"], ->
   gulp.src dirs.src.scripts
     .pipe do ngClassify
     .pipe coffee bare: yes
     .pipe gulp.dest dirs.app.scripts
 
-gulp.task "scripts", ->
-  runSequence ["delete_scripts"], ->
-    gulp.start "generate_scripts"
+gulp.task "scripts", ["generate_scripts"]
+
+# END of Scripts Tasks
+
+# ------------------------------------------------------------------------------
+
+# Styles Tasks
 
 gulp.task "delete_styles", ->
   gulp.src dirs.app.styles
     .pipe rimraf force: true
 
-gulp.task "styles", ->
+gulp.task "generate_styles", ["delete_styles"], ->
   gulp.src dirs.src.styles
     .pipe do stylus
     .pipe gulp.dest dirs.app.styles
     .pipe browserSync.reload(
       stream: true
     )
+
+gulp.task "styles", ["generate_styles"]
+
+# END of Styles tasks
+
+# ------------------------------------------------------------------------------
+
+# Partials Tasks
     
 gulp.task "delete_partials", ->
   gulp.src dirs.app.partials
     .pipe rimraf force: true
 
-gulp.task "generate_partials", ->
+gulp.task "generate_partials", ["delete_partials"], ->
   gulp.src dirs.src.partials
     .pipe jade pretty: yes
     .pipe gulp.dest dirs.app.partials
-    .pipe browserSync.reload(
-      stream: true
-      once: true
-    )
 
-gulp.task "partials", ->
-  runSequence ["delete_partials"], ->
-    gulp.start "generate_partials"
+gulp.task "partials", ["generate_partials"]
+    
+# END of Partials tasks
+
+# ------------------------------------------------------------------------------
+
+# Images tasks
     
 gulp.task "delete_images", ->
   gulp.src dirs.app.images
     .pipe rimraf force: true
 
-gulp.task "generate_images", ->
+gulp.task "generate_images", ["delete_images"], ->
   gulp.src dirs.src.images
     .pipe gulp.dest dirs.app.images
-    .pipe browserSync.reload(
-      stream: true
-      once: true
-    )
 
-gulp.task "images", ->
-  runSequence ["delete_images"], ->
-    gulp.start "generate_images"
+gulp.task "images", ["generate_images"]
+
+# END of Images tasks
+
+# ------------------------------------------------------------------------------
+
+# Fonts tasks
     
 gulp.task "delete_fonts", ->
   gulp.src dirs.app.fonts
     .pipe rimraf force: true
 
-gulp.task "generate_fonts", ->
+gulp.task "generate_fonts", ["delete_fonts"], ->
   gulp.src dirs.src.fonts
     .pipe gulp.dest dirs.app.fonts
 
-gulp.task "fonts", ->
-  runSequence ["delete_fonts"], ->
-    gulp.start "generate_fonts"
+gulp.task "fonts", ["generate_fonts"]
 
-gulp.task "concat_bower", ->
-  gulp.src bowerFiles()
-    .pipe(concat( 'dependencies.js') )
-    .pipe gulp.dest dirs.app.scripts
+# END of Fonts tasks
 
-gulp.task "index", ->
+# ------------------------------------------------------------------------------
+
+# Index task
+
+gulp.task "index", ["concat_bower", "scripts", "styles", "partials", "images", "fonts"], ->
   gulp.src dirs.src.index
     .pipe jade pretty: yes
     .pipe inject(
@@ -158,20 +178,39 @@ gulp.task "index", ->
       ], read: no )
     , ignorePath: ['/app'])
     .pipe gulp.dest 'app/'
-    .pipe browserSync.reload(
-      stream: true
-      once: true
-    )
+    
 
-gulp.task "compile", ->
-  runSequence ["concat_bower", "scripts", "styles", "partials", "images", "fonts"], ->
-    gulp.start "index"
+# END of Index task
+
+# ------------------------------------------------------------------------------
+
+# Compile Tasks
+
+gulp.task "concat_bower", ->
+  gulp.src bowerFiles()
+    .pipe(concat( 'dependencies.js') )
+    .pipe gulp.dest dirs.app.scripts
+
+gulp.task "compile", ["clean", "index"]
+  
+
+# END of Compile tasks
+
+# ------------------------------------------------------------------------------
+
+# Clean Task
 
 gulp.task 'clean', ->
   gulp.src ['app/**/*', '!app/bower_components', '!app/bower_components/**'], read: no
     .pipe rimraf force: true
 
-gulp.task "watch", ["clean" ,"compile", "browser_sync"], ->
+# END of clean task
+
+# ------------------------------------------------------------------------------
+
+# Watch task
+
+gulp.task "watch", ["compile", "browser_sync"], ->
   gulp.watch dirs.src.index, ->
     gulp.start 'compile'
 
@@ -182,7 +221,11 @@ gulp.task "watch", ["clean" ,"compile", "browser_sync"], ->
     gulp.start 'styles'
 
   gulp.watch dirs.src.partials, ->
-    gulp.start 'partials'
+    gulp.start 'compile'
 
   gulp.watch dirs.src.images, ->
-    gulp.start 'images'
+    gulp.start 'compile'
+
+# END of Watch tasks
+
+# ------------------------------------------------------------------------------
